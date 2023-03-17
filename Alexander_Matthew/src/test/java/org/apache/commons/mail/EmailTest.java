@@ -2,9 +2,14 @@ package org.apache.commons.mail;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Date;
+import javax.mail.internet.InternetAddress;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.After;
+
+
 
 public class EmailTest {
 	
@@ -17,12 +22,16 @@ public class EmailTest {
 	private EmailConcrete email;
 	private EmailDummy mimeEmail;
 	private EmailDummyMissing mimeEmailMissing;
+	private EmailDummySession emailWithSession;
+	private EmailDummyFrom emailFromTest;
 	
 	@Before
 	public void setUpEmailTest() throws Exception {
 		email = new EmailConcrete();
 		mimeEmail = new EmailDummy("test", VALID_EMAIL, VALID_EMAIL);
 		mimeEmailMissing = new EmailDummyMissing("test", VALID_EMAIL, VALID_EMAIL);
+		emailWithSession = new EmailDummySession("test", VALID_EMAIL, VALID_EMAIL);
+		emailFromTest = new EmailDummyFrom();
 	}
 	
 	@After
@@ -95,28 +104,68 @@ public class EmailTest {
 	
 	//Testing of buildMimeMessage() with full email attributes
 	@Test
-	public void buildMimeMessage() throws Exception {
+	public void testBuildMimeMessage() throws Exception {
 		
 		
 		try {
 			mimeEmail.buildMimeMessage();
 			
 		} catch (Exception e) {
-			System.out.print(e);
+			//System.out.print(e);
 		}
 	}
 	
 	//Testing of buildMimeMessage() with missing email attributes:
 	@Test
-	public void buildMimeMessageMissing() throws Exception {
+	public void testBuildMimeMessageMissing() throws Exception {
 		try {
 			mimeEmailMissing.buildMimeMessage();
 			
 		} catch (Exception e) {
-			System.out.print(e);
+			//System.out.print(e);
 		}
 	}
 	
+	//Testing of getHostName()
+	@Test
+	public void testGetHostName() throws Exception {
+		assertEquals(mimeEmail.getHostName(), "test");
+	}
 	
+	//Testing of getHostName() with session
+	@Test
+	public void testGetHostNameSession() throws Exception {
+		assertEquals(emailWithSession.getHostName(), null);
+	}
 	
+	//Testing of getMailSession with no session
+	@Test 
+	public void testGetMailSession() throws Exception {
+		try {
+			email.getMailSession();
+		} catch (Exception e) {
+			assertEquals(e.getClass(), org.apache.commons.mail.EmailException.class);
+		}
+		
+	}
+	
+	//Testing of getSentDate()
+	@Test
+	public void testGetSentDate() throws Exception {
+		email.sentDate = new Date();
+		Date currentDate = new Date();
+		assertEquals(email.getSentDate(), currentDate);
+	}
+	
+	//Testing of getSocketConnectionTimeout() 
+	@Test
+	public void testGetSocketConnectionTimeout() {
+		assertEquals(email.getSocketConnectionTimeout(), 60000);
+	}
+	
+	//Testing of setFrom()
+	@Test
+	public void testSetFrom() throws EmailException {
+		assertEquals(email.setFrom(VALID_EMAIL).fromAddress, emailFromTest.fromAddress);
+	}
 }
